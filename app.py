@@ -10,6 +10,7 @@ from wtforms.validators import InputRequired, Length, EqualTo
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
 
+
 app = Flask(__name__)  # 定義 Flask 應用
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 app.config['SECRET_KEY'] = 'your_secret_key'
@@ -20,6 +21,7 @@ app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USERNAME'] = 'your_email@gmail.com'
 app.config['MAIL_PASSWORD'] = 'your_email_password'
+
 
 mail = Mail(app)
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
