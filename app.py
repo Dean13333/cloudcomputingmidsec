@@ -8,7 +8,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, EqualTo
 from itsdangerous import URLSafeTimedSerializer
-from markupsafe import Markup
+
 
 app = Flask(__name__)  # 定義 Flask 應用
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
@@ -202,6 +202,12 @@ def my_account():
     my_posts = Post.query.filter_by(author_id=current_user.id).all()
     my_favorites = current_user.favorites
     return render_template('my_account.html', my_posts=my_posts, my_favorites=my_favorites)
+
+@app.route('/search', methods=['GET'])
+def search():
+    query = request.args.get('query')
+    posts = Post.query.filter(Post.title.contains(query) | Post.content.contains(query)).all() if query else []
+    return render_template('search_results.html', posts=posts)
 
 if __name__ == '__main__':
     app.run(debug=True)
