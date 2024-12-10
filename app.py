@@ -9,7 +9,8 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, EqualTo
 from itsdangerous import URLSafeTimedSerializer
 from markupsafe import Markup
-from flask_mailman import Mail, message
+from flask_mailman import Mail, Message
+
 
 
 
