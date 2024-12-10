@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>登入</h1>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <label for="username">使用者名稱</label>
+            {{ form.username }}
+
+            <label for="password">密碼</label>
+            {{ form.password }}
+
+            {{ form.submit }}
+        </form>
+        <a href="{{ url_for('index') }}">回到主畫面</a>
+        <a href="{{ url_for('reset_password_request') }}">忘記密碼？</a>
+    </div>
+</body>
+</html>

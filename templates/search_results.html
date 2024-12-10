@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Search Results</h1>
+
+        <!-- 如果有找到匹配的文章，顯示結果 -->
+        <ul>
+            {% if posts %}
+                {% for post in posts %}
+                    <li>
+                        <a href="{{ url_for('show_post', post_id=post.id) }}">{{ post.title }}</a>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <!-- 如果沒有匹配的結果，顯示提示訊息 -->
+                <p>No articles found matching your search criteria.</p>
+            {% endif %}
+        </ul>
+
+        <!-- 添加返回主頁的按鈕 -->
+        <a href="{{ url_for('index') }}">返回主畫面</a>
+    </div>
+</body>
+</html>

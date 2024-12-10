@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ current_user.username }} 的帳戶</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>{{ current_user.username }} 的帳戶</h1>
+        <h2>我的文章</h2>
+        {% if my_posts %}
+            <ul>
+                {% for post in my_posts %}
+                <li>
+                    <a href="{{ url_for('show_post', post_id=post.id) }}">{{ post.title }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>目前沒有文章</p>
+            <a href="{{ url_for('index') }}">瀏覽文章</a>
+        {% endif %}
+        <h2>我的最愛</h2>
+        {% if my_favorites %}
+            <ul>
+                {% for post in my_favorites %}
+                <li>
+                    <a href="{{ url_for('show_post', post_id=post.id) }}">{{ post.title }} by {{ post.user.username }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>目前沒有最愛文章</p>
+        {% endif %}
+        <a href="{{ url_for('index') }}">回到文章列表</a>
+    </div>
+</body>
+</html>

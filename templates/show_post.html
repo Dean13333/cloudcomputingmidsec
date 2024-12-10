@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>{{ post.title }} by {{ post.user.username }}</h1>
+        <p>{{ post.content }}</p>
+
+        <!-- Flash messages to show success or error messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul>
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Favorite button for logged-in users -->
+        {% if current_user.is_authenticated %}
+            <form method="POST" action="{{ url_for('favorite_post', post_id=post.id) }}">
+                <button type="submit">
+                    {% if post in current_user.favorites %}
+                        移除最愛
+                    {% else %}
+                        加入最愛
+                    {% endif %}
+                </button>
+            </form>
+
+            <!-- Edit and delete options for the post author -->
+            {% if current_user.id == post.author_id %}
+                <a href="{{ url_for('edit_post', post_id=post.id) }}">編輯文章</a>
+                <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}" style="display:inline;">
+                    <button type="submit">刪除文章</button>
+                </form>
+            {% endif %}
+        {% else %}
+            <p>請先 <a href="{{ url_for('login') }}">登入</a> 才能新增至最愛。</p>
+        {% endif %}
+        
+        <!-- 回到文章列表的按鈕 -->
+        <a href="{{ url_for('index') }}">回到文章列表</a>
+
+        <form action="{{ url_for('delete_post', post_id=post.id) }}" method="post">
+            <button type="submit">Delete Post</button>
+        </form>
+        
+        <!-- Comments section -->
+        <h2>Comments</h2>
+        <ul>
+            {% for comment in comments %}
+                <li>{{ comment.user.username }}: {{ comment.content }} ({{ comment.timestamp }})</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Comment submission form for logged-in users -->
+        {% if current_user.is_authenticated %}
+            <form method="POST">
+                <textarea name="comment" placeholder="Leave a comment"></textarea>
+                <input type="submit" value="Submit">
+            </form>
+        {% else %}
+            <p>請先 <a href="{{ url_for('login') }}">登入</a> 才能留言。</p>
+        {% endif %}
+    </div>
+</body>
+</html>
