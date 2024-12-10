@@ -8,7 +8,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, EqualTo
 from itsdangerous import URLSafeTimedSerializer
-from flask_mail import Mail, Message
+from flask_mailman import Mail, Message
 
 
 app = Flask(__name__)  # 定義 Flask 應用
