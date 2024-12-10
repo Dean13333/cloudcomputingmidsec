@@ -2,31 +2,20 @@ from datetime import datetime
 from flask import Flask, render_template, redirect, url_for, request, flash, jsonify, get_flashed_messages
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_migrate import Migrate  # 引入 Flask-Migrate
+from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, EqualTo
 from itsdangerous import URLSafeTimedSerializer
 from markupsafe import Markup
-from flask_mailman import Mail, Message
-
-
-
 
 app = Flask(__name__)  # 定義 Flask 應用
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECURITY_PASSWORD_SALT'] = 'your_salt'
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = 'your_email@gmail.com'
-app.config['MAIL_PASSWORD'] = 'your_email_password'
 
-
-mail = Mail(app)
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 db = SQLAlchemy(app)  # 定義 SQLAlchemy 資料庫
@@ -37,7 +26,8 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 # 最愛功能的關聯表
-favorites = db.Table('favorites',
+favorites = db.Table(
+    'favorites',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('post_id', db.Integer, db.ForeignKey('post.id'))
 )
@@ -84,16 +74,6 @@ class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=4, max=20)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=4, max=20)])
     submit = SubmitField('Login')
-
-# 重設密碼表單
-class ResetPasswordForm(FlaskForm):
-    email = StringField('Email', validators=[InputRequired(), Length(min=6, max=50)])
-    submit = SubmitField('Request Password Reset')
-
-class NewPasswordForm(FlaskForm):
-    password = PasswordField('New Password', validators=[InputRequired(), Length(min=4, max=20)])
-    confirm_password = PasswordField('Confirm New Password', validators=[InputRequired(), EqualTo('password')])
-    submit = SubmitField('Reset Password')
 
 # 初始化資料庫
 with app.app_context():
@@ -222,58 +202,6 @@ def my_account():
     my_posts = Post.query.filter_by(author_id=current_user.id).all()
     my_favorites = current_user.favorites
     return render_template('my_account.html', my_posts=my_posts, my_favorites=my_favorites)
-
-@app.route('/profile', methods=['GET', 'POST'])
-@login_required
-def profile():
-    if request.method == 'POST':
-        current_user.email = request.form['email']
-        current_user.bio = request.form['bio']
-        current_user.password = generate_password_hash(request.form['password'], method='pbkdf2:sha256') if request.form['password'] else current_user.password
-        db.session.commit()
-        flash('Profile updated!', 'success')
-        return redirect(url_for('profile'))
-    return render_template('profile.html')
-
-@app.route('/reset_password_request', methods=['GET', 'POST'])
-def reset_password_request():
-    form = ResetPasswordForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user:
-            token = serializer.dumps(user.email, salt=app.config['SECURITY_PASSWORD_SALT'])
-            reset_url = url_for('reset_password', token=token, _external=True)
-            msg = Message('Password Reset Request', sender='noreply@demo.com', recipients=[user.email])
-            msg.body = f'To reset your password, visit the following link: {reset_url}'
-            mail.send(msg)
-            flash('Check your email for the instructions to reset your password', 'info')
-            return redirect(url_for('login'))
-        else:
-            flash('Email address not found', 'danger')
-    return render_template('reset_password_request.html', form=form)
-
-@app.route('/reset_password/<token>', methods=['GET', 'POST'])
-def reset_password(token):
-    try:
-        email = serializer.loads(token, salt=app.config['SECURITY_PASSWORD_SALT'], max_age=3600)
-    except:
-        flash('The reset link is invalid or has expired', 'danger')
-        return redirect(url_for('reset_password_request'))
-    form = NewPasswordForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=email).first()
-        if user:
-            user.password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
-            db.session.commit()
-            flash('Your password has been updated!', 'success')
-            return redirect(url_for('login'))
-    return render_template('reset_password.html', form=form)
-
-@app.route('/search', methods=['GET'])
-def search():
-    query = request.args.get('query')
-    posts = Post.query.filter(Post.title.contains(query) | Post.content.contains(query)).all() if query else []
-    return render_template('search_results.html', posts=posts)
 
 if __name__ == '__main__':
     app.run(debug=True)
